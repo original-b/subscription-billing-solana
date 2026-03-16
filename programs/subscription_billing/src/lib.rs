@@ -118,7 +118,11 @@ pub struct ProcessPayment<'info> {
     pub subscriber: Signer<'info>, // Required as authority for token transfer
     #[account(mut)]
     pub subscriber_token_account: Account<'info, TokenAccount>,
-    #[account(mut)]
+    #[account(
+        mut,
+        constraint = provider_token_account.owner == plan.provider @ ErrorCode::InvalidProviderTokenAccountOwner,
+        constraint = provider_token_account.mint == plan.payment_mint @ ErrorCode::InvalidProviderTokenAccountMint
+    )]
     pub provider_token_account: Account<'info, TokenAccount>,
     pub token_program: Program<'info, Token>,
 }
@@ -153,4 +157,8 @@ pub enum ErrorCode {
     SubscriptionInactive,
     #[msg("Payment is not yet due for this subscription.")]
     PaymentNotDue,
+    #[msg("Provider token account owner must match the plan provider.")]
+    InvalidProviderTokenAccountOwner,
+    #[msg("Provider token account mint must match the plan payment mint.")]
+    InvalidProviderTokenAccountMint,
 }
